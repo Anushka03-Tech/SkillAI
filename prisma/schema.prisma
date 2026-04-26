@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  clerkId   String     @unique
+  email     String     @unique
+  name      String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  analyses  Analysis[]
+}
+
+model Analysis {
+  id              String         @id @default(cuid())
+  userId          String
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resumeText      String // Extracted text
+  jobDescription  String
+  matchScore      Float          @default(0)
+  matchDetails    Json // The structured result from AI
+  learningPlan    LearningPlan?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model LearningPlan {
+  id         String   @id @default(cuid())
+  analysisId String   @unique
+  analysis   Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  planData   Json // The 7/30/60/90 day roadmap
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
